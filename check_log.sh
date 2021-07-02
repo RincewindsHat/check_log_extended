@@ -2,7 +2,7 @@
 #
 # Log file pattern detector plugin for monitoring
 # Written by Ethan Galstad (nagios@nagios.org)
-# Last Modified: 07-31-1999
+# Last Modified: 02.07.2021 (european notation)
 #
 # Usage: ./check_log <log_file> <old_log_file> <pattern>
 #
@@ -191,10 +191,10 @@ fi
 diff $logfile $oldlog | grep -v "^>" > $tempdiff
 
 # Count the number of matching log entries we have
-count=`grep -c "$query" $tempdiff`
+count=`grep -E -c "$query" $tempdiff`
 
 # Get the last matching entry in the diff file
-lastentry=`grep "$query" $tempdiff | tail -1`
+lastentry=`grep -E "$query" $tempdiff | tail -1`
 
 rm -f $tempdiff
 cat $logfile > $oldlog
