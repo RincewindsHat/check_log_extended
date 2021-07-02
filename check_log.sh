@@ -55,14 +55,17 @@
 #   check_log /var/log/message ./check_log.portscan.old "attackalert"
 #
 
+set -e
+
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
 # Paths to commands used in this script.  These
 # may have to be modified to match your system setup.
 
-PROGNAME=`basename $0`
-PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
-REVISION="@NP_VERSION@"
-
-. $PROGPATH/utils.sh
+PROGNAME=$(basename "$0")
 
 print_usage() {
     echo "Usage: $PROGNAME -F logfile -O oldlog -q query"
@@ -71,13 +74,12 @@ print_usage() {
 }
 
 print_help() {
-    print_revision $PROGNAME $REVISION
-    echo ""
+    echo "check_log: Log file pattern detector plugin for monitoring"
     print_usage
-    echo ""
-    echo "Log file pattern detector plugin for monitoring"
-    echo ""
-    support
+}
+
+print_revision() {
+    echo "$1 v$2 (monitoring-plugins 2.3git - forked and modified)"
 }
 
 # Make sure the correct number of command line
@@ -105,11 +107,11 @@ while test -n "$1"; do
             exit $STATE_OK
             ;;
         --version)
-            print_revision $PROGNAME $REVISION
+            print_revision "$PROGNAME" "$REVISION"
             exit $STATE_OK
             ;;
         -V)
-            print_revision $PROGNAME $REVISION
+            print_revision "$PROGNAME" "$REVISION"
             exit $STATE_OK
             ;;
         --filename)
@@ -155,10 +157,10 @@ done
 
 # If the source log file doesn't exist, exit
 
-if [ ! -e $logfile ]; then
+if [ ! -e "$logfile" ]; then
     echo "Log check error: Log file $logfile does not exist!"
     exit $STATE_UNKNOWN
-elif [ ! -r $logfile ] ; then
+elif [ ! -r "$logfile" ] ; then
     echo "Log check error: Log file $logfile is not readable!"
     exit $STATE_UNKNOWN
 fi
@@ -167,8 +169,8 @@ fi
 # we're running this test, so copy the original log file over to
 # the old diff file and exit
 
-if [ ! -e $oldlog ]; then
-    cat $logfile > $oldlog
+if [ ! -e "$oldlog" ]; then
+    cat "$logfile" > "$oldlog"
     echo "Log check data initialized..."
     exit $STATE_OK
 fi
@@ -178,24 +180,24 @@ fi
 # The temporary file that the script should use while
 # processing the log file.
 if [ -x /bin/mktemp ]; then
-    tempdiff=`/bin/mktemp /tmp/check_log.XXXXXXXXXX`
+	tempdiff=$(/bin/mktemp /tmp/check_log.XXXXXXXXXX)
 else
-    tempdiff=`/bin/date '+%H%M%S'`
+    tempdiff=$(/bin/date '+%H%M%S')
     tempdiff="/tmp/check_log.${tempdiff}"
-    touch $tempdiff
-    chmod 600 $tempdiff
+    touch "$tempdiff"
+    chmod 600 "$tempdiff"
 fi
 
-diff $logfile $oldlog | grep -v "^>" > $tempdiff
+diff "$logfile" "$oldlog" | grep -v "^>" > "$tempdiff"
 
 # Count the number of matching log entries we have
-count=`grep -E -c "$query" $tempdiff`
+count=$(grep -E -c "$query" "$tempdiff")
 
 # Get the last matching entry in the diff file
-lastentry=`grep -E "$query" $tempdiff | tail -1`
+lastentry=$(grep -E "$query" "$tempdiff" | tail -1)
 
-rm -f $tempdiff
-cat $logfile > $oldlog
+rm -f "$tempdiff"
+cat "$logfile" > "$oldlog"
 
 if [ "$count" = "0" ]; then # no matches, exit with no error
     echo "0 pattern matches found"
