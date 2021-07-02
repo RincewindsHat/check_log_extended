@@ -55,7 +55,7 @@
 #   check_log /var/log/message ./check_log.portscan.old "attackalert"
 #
 
-set -e
+#set -e
 
 STATE_OK=0
 STATE_WARNING=1
