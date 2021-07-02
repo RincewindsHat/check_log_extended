@@ -19,7 +19,7 @@
 # On the first run of the plugin, it will return an OK state with a message
 # of "Log check data initialized".  On successive runs, it will return an OK
 # state if *no* pattern matches have been found in the *difference* between the
-# log file and the older copy of the log file.  If the plugin detects any 
+# log file and the older copy of the log file.  If the plugin detects any
 # pattern matches in the log diff, it will return a CRITICAL state and print
 # out a message is the following format: "(x) last_match", where "x" is the
 # total number of pattern matches found in the file and "last_match" is the
@@ -200,7 +200,7 @@ rm -f $tempdiff
 cat $logfile > $oldlog
 
 if [ "$count" = "0" ]; then # no matches, exit with no error
-    echo "Log check ok - 0 pattern matches found"
+    echo "0 pattern matches found"
     exitstatus=$STATE_OK
 else # Print total matche count and the last entry we found
     echo "($count) $lastentry"
